@@ -61,17 +61,18 @@ const rollupPluginCopy2: RollupPluginCopy2 = (options) => ({
             }
             if (fs.statSync(file).isFile()) {
               const source = fs.readFileSync(file)
+              if (outputDir) {
+                const filePath = path.resolve(outputDir, fileName.replace(/\.\.\//gi, ''));
+                mkdirp(path.dirname(filePath)).then(() => {
+                  fs.writeFileSync(filePath, source);
+                }).catch(this.error);
+                fileName = path.relative(process.cwd(), filePath);
+              }
               this.emitFile({
                 fileName,
                 source,
                 type: 'asset',
               });
-              if (outputDir) {
-                const filePath = path.resolve(outputDir, fileName);
-                mkdirp(path.dirname(filePath)).then(() => {
-                  fs.writeFileSync(filePath, source);
-                }).catch(this.error);
-              }
             }
           });
         }
